@@ -1,0 +1,11 @@
+You can get the latest xv6 code from following location
+
+git clone git://pdos.csail.mit.edu/xv6/xv6.git
+
+Now just apply the patches using following command
+
+patch -p1 < {patch_file_name}
+for e.g.
+patch -p1 < 0001-adding-a-system-call-to-get-open-fds-by-a-process.patch
+
+And then compile your xv6 and check :).

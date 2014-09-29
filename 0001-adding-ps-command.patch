@@ -1,0 +1,112 @@
+From 63db41cb2520f2566c0f48cc67a095883c26dea6 Mon Sep 17 00:00:00 2001
+From: Pawan <pawanprakash101@gmail.com>
+Date: Thu, 17 Jul 2014 23:57:08 +0530
+Subject: [PATCH] adding ps command
+
+---
+ Makefile  |    1 +
+ ps.c      |    8 ++++++++
+ syscall.c |    2 ++
+ syscall.h |    1 +
+ sysfile.c |    6 ++++++
+ user.h    |    1 +
+ usys.S    |    1 +
+ 7 files changed, 20 insertions(+)
+ create mode 100644 ps.c
+
+diff --git a/Makefile b/Makefile
+index a1b3d38..2643bbf 100644
+--- a/Makefile
++++ b/Makefile
+@@ -170,6 +170,7 @@ UPROGS=\
+ 	_usertests\
+ 	_wc\
+ 	_zombie\
++	_ps\
+ 
+ fs.img: mkfs README $(UPROGS)
+ 	./mkfs fs.img README $(UPROGS)
+diff --git a/ps.c b/ps.c
+new file mode 100644
+index 0000000..192d4df
+--- /dev/null
++++ b/ps.c
+@@ -0,0 +1,8 @@
++#include "types.h"
++#include "user.h"
++
++int main()
++{
++	ps();
++	exit();
++}
+diff --git a/syscall.c b/syscall.c
+index 799ebc2..f65fb7e 100644
+--- a/syscall.c
++++ b/syscall.c
+@@ -98,6 +98,7 @@ extern int sys_unlink(void);
+ extern int sys_wait(void);
+ extern int sys_write(void);
+ extern int sys_uptime(void);
++extern int sys_ps(void);
+ 
+ static int (*syscalls[])(void) = {
+ [SYS_fork]    sys_fork,
+@@ -121,6 +122,7 @@ static int (*syscalls[])(void) = {
+ [SYS_link]    sys_link,
+ [SYS_mkdir]   sys_mkdir,
+ [SYS_close]   sys_close,
++[SYS_ps]      sys_ps,
+ };
+ 
+ void
+diff --git a/syscall.h b/syscall.h
+index bc5f356..dfe8c32 100644
+--- a/syscall.h
++++ b/syscall.h
+@@ -20,3 +20,4 @@
+ #define SYS_link   19
+ #define SYS_mkdir  20
+ #define SYS_close  21
++#define SYS_ps     22
+diff --git a/sysfile.c b/sysfile.c
+index 64f2b33..efbfc77 100644
+--- a/sysfile.c
++++ b/sysfile.c
+@@ -100,6 +100,12 @@ sys_close(void)
+   return 0;
+ }
+ 
++int sys_ps(void)
++{
++  procdump();
++  return 0;
++}
++
+ int
+ sys_fstat(void)
+ {
+diff --git a/user.h b/user.h
+index 9e26cf1..5a75103 100644
+--- a/user.h
++++ b/user.h
+@@ -22,6 +22,7 @@ int getpid(void);
+ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
++int ps(void);
+ 
+ // ulib.c
+ int stat(char*, struct stat*);
+diff --git a/usys.S b/usys.S
+index 8bfd8a1..f60a533 100644
+--- a/usys.S
++++ b/usys.S
+@@ -29,3 +29,4 @@ SYSCALL(getpid)
+ SYSCALL(sbrk)
+ SYSCALL(sleep)
+ SYSCALL(uptime)
++SYSCALL(ps)
+-- 
+1.7.9.5
+

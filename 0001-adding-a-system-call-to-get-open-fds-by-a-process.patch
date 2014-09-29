@@ -1,0 +1,129 @@
+From fb4ad94f8e3d932cdbe295c47e31388c05ceffcb Mon Sep 17 00:00:00 2001
+From: Pawan <pawanprakash101@gmail.com>
+Date: Sun, 31 Aug 2014 00:15:38 +0530
+Subject: [PATCH] adding a system call to get open fds by a process
+
+---
+ Makefile  |    1 +
+ ofile.c   |   19 +++++++++++++++++++
+ syscall.c |    2 ++
+ syscall.h |    1 +
+ sysfile.c |   12 ++++++++++++
+ user.h    |    1 +
+ usys.S    |    1 +
+ 7 files changed, 37 insertions(+)
+ create mode 100644 ofile.c
+
+diff --git a/Makefile b/Makefile
+index 2643bbf..53ee9f2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -171,6 +171,7 @@ UPROGS=\
+ 	_wc\
+ 	_zombie\
+ 	_ps\
++	_ofile\
+ 
+ fs.img: mkfs README $(UPROGS)
+ 	./mkfs fs.img README $(UPROGS)
+diff --git a/ofile.c b/ofile.c
+new file mode 100644
+index 0000000..661a4cd
+--- /dev/null
++++ b/ofile.c
+@@ -0,0 +1,19 @@
++#include "types.h"
++#include "user.h"
++#include "fcntl.h"
++
++int main()
++{
++	int fd = open("a.txt", O_RDONLY);
++	printf(1, "1. fd = %d\n", fd);
++	fd = open("a.txt", O_RDONLY);
++	printf(1, "2. fd = %d\n", fd);
++	ofile();
++	close(0);
++	ofile();
++	close(1);
++	ofile();
++	close(2);
++	ofile();
++	exit();
++}
+diff --git a/syscall.c b/syscall.c
+index f65fb7e..4ecce93 100644
+--- a/syscall.c
++++ b/syscall.c
+@@ -99,6 +99,7 @@ extern int sys_wait(void);
+ extern int sys_write(void);
+ extern int sys_uptime(void);
+ extern int sys_ps(void);
++extern int sys_ofile(void);
+ 
+ static int (*syscalls[])(void) = {
+ [SYS_fork]    sys_fork,
+@@ -123,6 +124,7 @@ static int (*syscalls[])(void) = {
+ [SYS_mkdir]   sys_mkdir,
+ [SYS_close]   sys_close,
+ [SYS_ps]      sys_ps,
++[SYS_ofile]   sys_ofile,
+ };
+ 
+ void
+diff --git a/syscall.h b/syscall.h
+index dfe8c32..de73d67 100644
+--- a/syscall.h
++++ b/syscall.h
+@@ -21,3 +21,4 @@
+ #define SYS_mkdir  20
+ #define SYS_close  21
+ #define SYS_ps     22
++#define SYS_ofile  23
+diff --git a/sysfile.c b/sysfile.c
+index efbfc77..a52a961 100644
+--- a/sysfile.c
++++ b/sysfile.c
+@@ -106,6 +106,18 @@ int sys_ps(void)
+   return 0;
+ }
+ 
++int sys_ofile(void)
++{
++  int fd; 
++
++  for(fd = 0; fd < NOFILE; fd++) {
++    if(proc->ofile[fd])
++      cprintf("%d ", fd);
++  }
++  cprintf("\n");
++	return 0;
++}
++
+ int
+ sys_fstat(void)
+ {
+diff --git a/user.h b/user.h
+index 5a75103..2ecf733 100644
+--- a/user.h
++++ b/user.h
+@@ -23,6 +23,7 @@ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
+ int ps(void);
++int ofile(void);
+ 
+ // ulib.c
+ int stat(char*, struct stat*);
+diff --git a/usys.S b/usys.S
+index f60a533..f2008f6 100644
+--- a/usys.S
++++ b/usys.S
+@@ -30,3 +30,4 @@ SYSCALL(sbrk)
+ SYSCALL(sleep)
+ SYSCALL(uptime)
+ SYSCALL(ps)
++SYSCALL(ofile)
+-- 
+1.7.9.5
+
