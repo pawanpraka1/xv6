@@ -8,4 +8,8 @@ patch -p1 < {patch_file_name}
 for e.g.
 patch -p1 < 0001-adding-a-system-call-to-get-open-fds-by-a-process.patch
 
-And then compile your xv6 and check :).
+And then compile your xv6 and check :) 
+
+or you can clone the custom xv6 with all the patches :-
+
+git clone https://github.com/pawanpraka1/my_xv6.git.
